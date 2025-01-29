@@ -1,0 +1,26 @@
+{
+  "name": "origin_vault",
+  "version": "1.0.0",
+  "description": "Blockchain based food traceability app",
+  "main": "main.dart",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Bug-Bashers-2024/origin_vault.git"
+  },
+  "keywords": [
+    "origin"
+  ],
+  "author": "theBugBashers",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/The-Bug-Bashers-2024/origin_vault/issues"
+  },
+  "homepage": "https://github.com/The-Bug-Bashers-2024/origin_vault#readme"
+}
