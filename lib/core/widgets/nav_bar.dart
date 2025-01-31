@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:origin_vault/core/theme/app_pallete.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/admin_dashboard.dart';
+import 'package:origin_vault/screens/admin_level/presentation/pages/user_management_page.dart';
 
 class UserPageWrapper extends StatefulWidget {
   final int userLevel;
@@ -29,9 +30,7 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
     if (widget.userLevel == 1) {
       return [
         // Home Page (Admin Dashboard)
-        const Center(
-            child: Text("Users Page",
-                style: TextStyle(color: Colors.white, fontSize: 20))),
+        const Usermanagement(),
         const Center(
             child: Text("System Page",
                 style: TextStyle(color: Colors.white, fontSize: 20))),

@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:origin_vault/core/theme/app_pallete.dart';
+import 'package:origin_vault/screens/admin_level/presentation/pages/add_or_edit_page.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/admin_sidebar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -38,9 +39,11 @@ class _UsermanagementState extends State<Usermanagement> {
       });
     } catch (e) {
       print('Error fetching users: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -53,6 +56,12 @@ class _UsermanagementState extends State<Usermanagement> {
               .contains(query.toLowerCase()))
           .toList();
     });
+  }
+
+  void dispose() {
+    super.dispose();
+    _filteredUsers.clear();
+    _users.clear();
   }
 
   Widget _buildTopBar() {
@@ -161,7 +170,10 @@ class _UsermanagementState extends State<Usermanagement> {
           ),
         ),
         onPressed: () {
-          // Handle add/edit users action
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const AddEditUserScreen()));
         },
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -205,121 +217,6 @@ class _UsermanagementState extends State<Usermanagement> {
       key: _scaffoldKey,
       backgroundColor: AppPallete.backgroundColor,
       drawer: SideMenu(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: SizedBox(
-        height: 80.h,
-        width: 80.w,
-        child: FloatingActionButton(
-          onPressed: () {},
-          backgroundColor: AppPallete.secondarybackgroundColor,
-          elevation: 0,
-          shape: const CircleBorder(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Iconsax.house_2,
-                size: 24.sp,
-                color: AppPallete.iconColor,
-              ),
-              SizedBox(height: 5.h),
-              Text(
-                'Home',
-                style: TextStyle(
-                  color: AppPallete.iconColor,
-                  fontSize: 12.sp,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        notchMargin: 8.0,
-        shape: const CircularNotchedRectangle(),
-        color: AppPallete.secondarybackgroundColor,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0, top: 8.0),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Usermanagement()),
-                  );
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Iconsax.people, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("Users",
-                        style: TextStyle(color: AppPallete.iconColor)),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.only(right: 20.0, top: 8.0, bottom: 1.0),
-              child: InkWell(
-                onTap: () {
-                  // Handle tap on "System" button
-                  print("System button tapped");
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Iconsax.monitor_mobbile, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("System",
-                        style: TextStyle(color: AppPallete.iconColor)),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 20.0, top: 8.0, bottom: 1.0),
-              child: InkWell(
-                onTap: () {
-                  // Handle tap on "Reports" button
-                  print("Reports button tapped");
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Iconsax.status_up, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("Reports",
-                        style: TextStyle(color: AppPallete.iconColor)),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 10.0, top: 8.0),
-              child: InkWell(
-                onTap: () {
-                  // Handle tap on "Audits" button
-                  print("Audits button tapped");
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Iconsax.document_text, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("Audits",
-                        style: TextStyle(color: AppPallete.iconColor)),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
       body: Column(
         children: [
           _buildTopBar(),

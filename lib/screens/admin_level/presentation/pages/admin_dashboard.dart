@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:origin_vault/core/theme/app_pallete.dart';
+import 'package:origin_vault/screens/admin_level/notification_page.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/admin_sidebar.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -18,7 +19,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // ✅ Assign Global Key
+      key: _scaffoldKey,
       backgroundColor: Colors.black, // ✅ Entire App Background Black
       drawer: const Drawer(
         child: SideMenu(), // ✅ Sidebar (Works Now!)
@@ -27,10 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top navigation bar
             _buildTopNavBar(),
-
-            // Main content area
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(16.w),
@@ -42,6 +40,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildStatsSection(),
                     SizedBox(height: 20.h),
                     _buildRecentActivities(),
+                    SizedBox(height: 20.h),
+                    _buildRecentTransactions(), // ✅ Added New Section
                   ],
                 ),
               ),
@@ -56,22 +56,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildTopNavBar() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      color: Colors.black, // ✅ Black Navbar
+      color: Colors.black,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Iconsax.candle_2,
-                color: Colors.white), // ✅ White Icon for Visibility
+            icon: const Icon(Iconsax.candle_2, color: Colors.white),
             onPressed: () {
-              _scaffoldKey.currentState
-                  ?.openDrawer(); // ✅ FIX: Opens Sidebar Now!
+              _scaffoldKey.currentState?.openDrawer();
             },
           ),
           IconButton(
             icon: const Icon(Iconsax.notification, color: Colors.white),
             onPressed: () {
-              // Handle notification tap
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NotificationScreen()));
             },
           ),
         ],
@@ -107,7 +108,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Expanded(
           child: _buildDataBox(
             'User Count',
-            '120', // Replace with dynamic data
+            '120',
             '+11.75%',
           ),
         ),
@@ -128,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900], // ✅ Dark Grey Background
+        color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -168,50 +169,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Recent Activities',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          _buildHeader('Recent Activities'), // ✅ Title + "View All" Button
           SizedBox(height: 16.h),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // ✅ Changed from Column to Row for Side by Side Layout
             children: [
               Expanded(
-                child: _buildActivityCard(
-                  'Login',
-                  'Admin accessed system',
-                  '2025-01-31 10:30 AM',
-                ),
-              ),
-              SizedBox(width: 16.w),
+                  child: _buildActivityCard(
+                      'Login', 'Admin accessed system', '2025-01-31 10:30 AM')),
+              SizedBox(width: 10.w),
               Expanded(
-                child: _buildActivityCard(
-                  'Report Generated',
-                  'Sales Report accessed',
-                  '2025-01-31 11:00 AM',
-                ),
-              ),
+                  child: _buildActivityCard('Report Generated',
+                      'Sales Report accessed', '2025-01-31 11:00 AM')),
             ],
-          ),
-          SizedBox(height: 16.h),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: TextButton(
-              onPressed: () {
-                // Handle 'View All' action
-              },
-              child: Text(
-                'View All',
-                style: TextStyle(color: Colors.blueAccent, fontSize: 14.sp),
-              ),
-            ),
           ),
         ],
       ),
+    );
+  }
+
+  /// 🔹 Recent Transactions Section (NEW)
+  Widget _buildRecentTransactions() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader('Recent Transactions'),
+          SizedBox(height: 16.h),
+          _buildTransactionTile(
+              'Payment Received', 'Transaction successful', '\$99,284.01'),
+          SizedBox(height: 10.h),
+          _buildTransactionTile(
+              'Refund Issued', 'Processed refund', '\$10,500.00'),
+        ],
+      ),
+    );
+  }
+
+  /// 🔹 Header for Sections (Reusable)
+  Widget _buildHeader(String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold),
+        ),
+        TextButton(
+          onPressed: () {
+            // Handle "View All" action
+          },
+          child: Text('View All',
+              style: TextStyle(color: Colors.blueAccent, fontSize: 14.sp)),
+        ),
+      ],
     );
   }
 
@@ -220,30 +239,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.black, // ✅ Black Background for Activity Card
+        color: Colors.black,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(title,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold)),
           SizedBox(height: 8.h),
-          Text(
-            description,
-            style: TextStyle(color: Colors.white, fontSize: 14.sp),
-          ),
+          Text(description,
+              style: TextStyle(color: Colors.white, fontSize: 14.sp)),
           SizedBox(height: 8.h),
-          Text(
-            date,
-            style: TextStyle(color: Colors.greenAccent, fontSize: 12.sp),
+          Text(date,
+              style: TextStyle(color: Colors.greenAccent, fontSize: 12.sp)),
+        ],
+      ),
+    );
+  }
+
+  /// 🔹 Single Transaction Tile
+  Widget _buildTransactionTile(
+      String title, String description, String amount) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold)),
+              SizedBox(height: 4.h),
+              Text(description,
+                  style: TextStyle(color: Colors.grey, fontSize: 14.sp)),
+            ],
           ),
+          Text(amount,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold)),
         ],
       ),
     );

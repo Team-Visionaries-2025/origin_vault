@@ -18,9 +18,7 @@ void main() async {
       anonKey: dotenv.env['SUPABASE_KEY'] ?? '',
       debug: true,
     );
-    debugPrint("✅ Supabase initialized successfully");
   } catch (e) {
-    debugPrint("❌ Error initializing Supabase: $e");
   }
 
   runApp(const MyApp());
