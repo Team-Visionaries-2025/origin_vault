@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:origin_vault/core/theme/app_pallete.dart';
-import 'package:origin_vault/screens/admin_level/presentation/pages/admin_sidebar.dart';
-import 'package:origin_vault/screens/producer_level/presentation/pages/add_product_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:origin_vault/screens/admin_level/notification_page.dart';
 
 class Producerdashboard extends StatefulWidget {
   const Producerdashboard({super.key});
@@ -16,259 +15,326 @@ class Producerdashboard extends StatefulWidget {
 
 class _ProducerdashboardState extends State<Producerdashboard> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final supabase =
-      SupabaseClient(dotenv.env['SUPABASE_URL']!, dotenv.env['SUPABASE_KEY']!);
-  int _userCount = 0;
-  bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchUserCount();
-  }
+  // Controllers for form fields
+  final TextEditingController productNameController = TextEditingController();
+  final TextEditingController productOriginController = TextEditingController();
+  final TextEditingController productIdController = TextEditingController();
+  int productQuantity = 1;
+  String? selectedProductType;
+  String? selectedFilePath;
+  LatLng? productLocation;
+  GoogleMapController? _mapController;
+  List<String> productTypes = ['Organic', 'Non-Organic', 'GMO'];
 
-  Future<void> _fetchUserCount() async {
-    try {
-      final response = await supabase.from('user_table').select();
-
+  /// **Function to Pick File**
+  Future<void> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
       setState(() {
-        _userCount = response.length;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
+        selectedFilePath = result.files.single.name;
       });
     }
   }
 
-  Widget _buildTopBar() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(10.w, 40.h, 10.w, 0),
-      color: AppPallete.backgroundColor,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(Iconsax.candle_2, color: Colors.cyan),
-            onPressed: () {
-              _scaffoldKey.currentState?.openDrawer();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Iconsax.notification, color: Colors.cyan),
-            onPressed: () {
-              // Handle notification action
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDataBox(String title, String value, String subValue) {
-    return Container(
-      height: 150.h, // Add this line to set a fixed height
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppPallete.secondarybackgroundColor,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(color: AppPallete.textcolor1, fontSize: 20.sp),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            subValue,
-            style: TextStyle(color: Colors.cyan, fontSize: 14.sp),
-          ),
-          // Remove the SizedBox and Container for the chart/graph
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavItem(IconData icon, String label) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 4.h),
-      child: InkWell(
-        onTap: () {
-          print("$label button tapped");
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: AppPallete.iconColor, size: 24.sp),
-            SizedBox(height: 3.h),
-            Text(label,
-                style: TextStyle(color: AppPallete.iconColor, fontSize: 12.sp)),
-          ],
-        ),
-      ),
-    );
+  /// **Simulated API Call to Fetch Product Location**
+  Future<void> _fetchProductLocation() async {
+    setState(() {
+      productLocation =
+          const LatLng(37.7749, -122.4194); // Example: San Francisco
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppPallete.backgroundColor,
-      drawer: SideMenu(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: SizedBox(
-        height: 80.h,
-        width: 80.w,
-        child: FloatingActionButton(
-          onPressed: () {},
-          backgroundColor: AppPallete.secondarybackgroundColor,
-          elevation: 0,
-          shape: const CircleBorder(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Iconsax.house_2,
-                size: 24.sp,
-                color: AppPallete.iconColor,
-              ),
-              SizedBox(height: 5.h),
-              Text(
-                'Home',
-                style: TextStyle(
-                  color: AppPallete.iconColor,
-                  fontSize: 12.sp,
-                ),
-              ),
-            ],
+      backgroundColor: Colors.black,
+      drawer: Drawer(
+        child: Container(
+          color: Colors.grey[900],
+          child: Center(
+            child: Text("Sidebar Menu", style: TextStyle(color: Colors.white)),
           ),
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        notchMargin: 8.0,
-        shape: const CircularNotchedRectangle(),
-        color: AppPallete.secondarybackgroundColor,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.max,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0, top: 8.0),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AddProductPage()),
-                  );
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Iconsax.box, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("Products",
-                        style: TextStyle(color: AppPallete.iconColor)),
-                  ],
-                ),
+            // **Top Navigation Bar**
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              color: Colors.black,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Iconsax.candle_2, color: Colors.white),
+                    onPressed: () {
+                      _scaffoldKey.currentState?.openDrawer();
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Iconsax.notification, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const NotificationScreen()));
+                    },
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding:
-                  const EdgeInsets.only(right: 20.0, top: 8.0, bottom: 1.0),
-              child: InkWell(
-                onTap: () {
-                  // Handle tap on "System" button
-                  print("System button tapped");
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
+
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Iconsax.message_notif, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("Message",
-                        style: TextStyle(color: AppPallete.iconColor)),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 20.0, top: 8.0, bottom: 1.0),
-              child: InkWell(
-                onTap: () {
-                  // Handle tap on "Reports" button
-                  print("Reports button tapped");
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Iconsax.d_cube_scan, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("Suply Chain",
-                        style: TextStyle(color: AppPallete.iconColor)),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 10.0, top: 8.0),
-              child: InkWell(
-                onTap: () {
-                  // Handle tap on "Audits" button
-                  print("Audits button tapped");
-                },
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Iconsax.setting_2, color: AppPallete.iconColor),
-                    SizedBox(height: 3),
-                    Text("Settings",
-                        style: TextStyle(color: AppPallete.iconColor)),
+                    // **Welcome Header**
+                    Text('Hello Producer',
+                        style: TextStyle(color: Colors.white, fontSize: 24.sp)),
+                    Text('Welcome Back!',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 32.sp,
+                            fontWeight: FontWeight.bold)),
+                    SizedBox(height: 20.h),
+
+                    // **Add Product Form (Everything Kept)**
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Add Product',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold)),
+                          SizedBox(height: 12.h),
+
+                          // **Product Name Field**
+                          Text("Product Name",
+                              style: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14.sp)),
+                          SizedBox(height: 4.h),
+                          TextField(
+                            controller: productNameController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.grey[850],
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  borderSide: BorderSide.none),
+                            ),
+                          ),
+
+                          SizedBox(height: 12.h),
+
+                          // **Product Type Dropdown**
+                          Text("Product Type",
+                              style: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14.sp)),
+                          SizedBox(height: 4.h),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            decoration: BoxDecoration(
+                                color: Colors.grey[850],
+                                borderRadius: BorderRadius.circular(10.r)),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                dropdownColor: Colors.grey[900],
+                                style: const TextStyle(color: Colors.white),
+                                isExpanded: true,
+                                value: selectedProductType,
+                                items: productTypes.map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedProductType = newValue;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: 12.h),
+
+                          // **Product Quantity Selector**
+                          Text("Product Quantity",
+                              style: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14.sp)),
+                          SizedBox(height: 4.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove,
+                                    color: Colors.white),
+                                onPressed: () {
+                                  setState(() {
+                                    if (productQuantity > 1) productQuantity--;
+                                  });
+                                },
+                              ),
+                              Text(productQuantity.toString(),
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 16.sp)),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.add, color: Colors.white),
+                                onPressed: () {
+                                  setState(() {
+                                    productQuantity++;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          // **Product Origin Field**
+                          Text("Product Origin",
+                              style: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14.sp)),
+                          SizedBox(height: 4.h),
+                          TextField(
+                            controller: productOriginController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.grey[850],
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  borderSide: BorderSide.none),
+                            ),
+                          ),
+
+                          SizedBox(height: 12.h),
+
+                          // **Product Certification - File Upload**
+                          Text("Product Certification",
+                              style: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14.sp)),
+                          SizedBox(height: 4.h),
+                          GestureDetector(
+                            onTap: _pickFile,
+                            child: Container(
+                              padding: EdgeInsets.all(12.w),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[850],
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    selectedFilePath ??
+                                        "Drop files or click to upload",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  Icon(Icons.upload_file, color: Colors.cyan),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: 12.h),
+
+                          // **Save & Clear Buttons**
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                  onPressed: () {}, child: const Text("Add")),
+                              ElevatedButton(
+                                  onPressed: () {},
+                                  child: const Text("Clear Form")),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 20.h),
+
+                    // **Product Location Section (Below Form)**
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Track Product Location',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold)),
+                          SizedBox(height: 12.h),
+                          TextField(
+                            controller: productIdController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.grey[850],
+                              hintText: "Enter Product ID",
+                              hintStyle: TextStyle(color: Colors.grey[400]),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  borderSide: BorderSide.none),
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          ElevatedButton(
+                            onPressed: _fetchProductLocation,
+                            child: const Text("Find Location"),
+                          ),
+                          if (productLocation != null) ...[
+                            SizedBox(height: 20.h),
+                            Container(
+                              height: 200.h,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12.r)),
+                              child: GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                    target: productLocation!, zoom: 12),
+                                markers: {
+                                  Marker(
+                                      markerId:
+                                          const MarkerId("productLocation"),
+                                      position: productLocation!)
+                                },
+                                onMapCreated: (controller) {
+                                  _mapController = controller;
+                                },
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          _buildTopBar(),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hello Producer',
-                      style: TextStyle(color: Colors.white, fontSize: 24.sp),
-                    ),
-                    Text(
-                      'Welcome Back!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
