@@ -60,6 +60,10 @@ dependencies:
   printing: ^5.14.0
   pdf: ^3.11.2
   file_picker: ^8.3.1
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  uuid: ^4.5.1
+  mime: ^2.0.0
 curved_navigation_bar_with_label: ^2.1.4
 
 dev_dependencies:
