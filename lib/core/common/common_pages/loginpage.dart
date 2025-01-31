@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:origin_vault/core/common/common_pages/forgotpasswordpage.dart';
 import 'package:origin_vault/core/common/common_pages/registerpage.dart';
 import 'package:origin_vault/screens/consumer_level/presentation/pages/consumer_dashboard.dart';
+import 'package:origin_vault/screens/producer_level/presentation/pages/producer_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Loginpage extends StatefulWidget {
@@ -34,7 +35,7 @@ class _LoginpageState extends State<Loginpage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const Consumerdashboard(),
+            builder: (context) => const Producerdashboard(),
           ),
         );
       }
