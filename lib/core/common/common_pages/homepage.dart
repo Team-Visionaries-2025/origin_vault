@@ -18,45 +18,6 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Enhanced glare effect
-                  Positioned(
-                    child: Container(
-                      width: 280.w,
-                      height: 150.h,
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.4),
-                            Colors.white.withOpacity(0.5),
-                            Colors.white.withOpacity(0.05),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.5, 0.3, 0.7, 1.0],
-                          center: Alignment.center,
-                          radius: 10, // Full radius within the container
-                        ),
-                        borderRadius: BorderRadius.circular(5.h),
-                      ),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 220, sigmaY: 40),
-                        child: Container(color: Colors.transparent),
-                      ),
-                    ),
-                  ),
-                  // Larger text on top of the glare effect
-                  Text(
-                    'ORIGIN VAULT',
-                    style: GoogleFonts.roboto(
-                      fontSize: 48.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
               SizedBox(height: 180.h),
               Container(
                 decoration: BoxDecoration(
