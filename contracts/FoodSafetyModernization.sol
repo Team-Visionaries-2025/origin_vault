@@ -103,7 +103,7 @@ contract FoodSafetyModernization {
         string memory _originLocation,
         string memory _processingDetails,
         string memory _ipfsHash
-    ) public {
+    ) public onlyVerifiedFarmer{
         productCount++;
 
         products[productCount] = Product({
@@ -165,23 +165,47 @@ contract FoodSafetyModernization {
 
     // Function for viewing product details
     function productDetails(uint256 _productId) public view returns (
-        string memory productName,
-        string memory originLocation,
-        string memory processingDetails,
+        uint256 id,
+        string memory name,
+        string memory origin,
+        string memory processing,
+        address farmer,
+        address processor,
+        address transporter,
+        address retailer,
         ProductStage stage,
-        uint256 creationTime,
-        string memory ipfsHash,
-        bool isCompleted
+        uint256 timestamp,
+        string memory ipfs,
+        bool completed
     ) {
-        Product storage product = products[_productId];
+        // Product storage product = products[_productId];
 
-        productName = product.productName;
-        originLocation = product.originLocation;
-        processingDetails = product.processingDetails;
-        stage = product.stage;
-        creationTime = product.creationTime;
-        ipfsHash = product.ipfsHash;
-        isCompleted = product.isCompleted;
+        // productName = product.productName;
+        // originLocation = product.originLocation;
+        // processingDetails = product.processingDetails;
+        // stage = product.stage;
+        // creationTime = product.creationTime;
+        // ipfsHash = product.ipfsHash;
+        // isCompleted = product.isCompleted;
+
+        require(_productId > 0 && _productId <= productCount, "Invalid product ID");
+
+        Product memory product = products[_productId];
+
+        return (
+            product.productId,
+            product.productName,
+            product.originLocation,
+            product.processingDetails,
+            product.farmer,
+            product.processor,
+            product.transporter,
+            product.retailer,
+            product.stage,
+            product.creationTime,
+            product.ipfsHash,
+            product.isCompleted
+        )
     }
 
     // Function for consumers to submit a review

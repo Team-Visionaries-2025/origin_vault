@@ -3,7 +3,7 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 
 class BlockchainService {
-  final String rpcUrl = "https://127.0.0.1:7545";
+  final String rpcUrl = "http://10.0.2.2:7545";
   final String privateKey =
       "0x23ac605b59643e9bcc7050f31227478031e5147709f86708cbe30cdfba1e3651";
 
@@ -19,36 +19,49 @@ class BlockchainService {
   }
 
   Future<void> initialize() async {
-    // Load the ABI and contract address from the assets
-    String abi = await rootBundle
-        .loadString("assets/abi.json"); // Ensure the ABI file is in assets
-    contractAddress = EthereumAddress.fromHex(
-        "0x8872b80CE2a03fC71F47915ABD8b413F7DBDFBDD"); // Replace with deployed contract address
+    try {
+      // Load the ABI and contract address from the assets
+      String abi = await rootBundle
+          .loadString("assets/abi.json"); // Ensure the ABI file is in assets
+      contractAddress = EthereumAddress.fromHex(
+          "0x8872b80CE2a03fC71F47915ABD8b413F7DBDFBDD"); // Replace with deployed contract address
 
-    // Create the contract object
-    contract = DeployedContract(
-      ContractAbi.fromJson(abi, "FoodSafetyModernization.sol"),
-      contractAddress,
-    );
+      // Create the contract object
+      contract = DeployedContract(
+        ContractAbi.fromJson(abi, "FoodSafetyModernization.sol"),
+        contractAddress,
+      );
+    } catch (e) {
+      throw Exception("Error initializing blockchain service: $e");
+    }
   }
 
   // Function to create a product (as a farmer)
   Future<String> createProduct(String productName, String originLocation,
       String processingDetails, String ipfsHash) async {
-    final createProductFunction = contract.function('createProduct');
+    try {
+      final createProductFunction = contract.function('createProduct');
 
-    // Call the contract function
-    final result = await ethClient.sendTransaction(
-      credentials,
-      Transaction.callContract(
-        contract: contract,
-        function: createProductFunction,
-        parameters: [productName, originLocation, processingDetails, ipfsHash],
-      ),
-      chainId: 1337, // Adjust if you're not using Ganache
-    );
+      // Call the contract function
+      final result = await ethClient.sendTransaction(
+        credentials,
+        Transaction.callContract(
+          contract: contract,
+          function: createProductFunction,
+          parameters: [
+            productName,
+            originLocation,
+            processingDetails,
+            ipfsHash
+          ],
+        ),
+        chainId: 1337,
+      );
 
-    return result; // Transaction hash
+      return result; // Transaction hash
+    } catch (e) {
+      throw Exception("Error creating product: $e");
+    }
   }
 
   // Function to process the product (as a processor)
@@ -121,13 +134,14 @@ class BlockchainService {
   }
 
   // Function to get the product details
-  Future<List<dynamic>> getProductDetails(int productId) async {
-    final productDetailsFunction = contract.function('productDetails');
+  Future<List<dynamic>> getProductDetailsByTxnHash(String txnHash) async {
+    final productDetailsFunction =
+        contract.function('getProductDetailsByTxnHash');
 
     final result = await ethClient.call(
       contract: contract,
       function: productDetailsFunction,
-      params: [BigInt.from(productId)],
+      params: [txnHash],
     );
 
     return result; // Returns list of product details

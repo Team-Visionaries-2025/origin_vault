@@ -13,6 +13,8 @@ import 'package:uuid/uuid.dart';
 import 'dart:io';
 import 'package:mime/mime.dart';
 
+import '../../../../blockchain_service/blockchain_service.dart';
+
 class Producerdashboard extends StatefulWidget {
   const Producerdashboard({super.key});
 
@@ -22,6 +24,7 @@ class Producerdashboard extends StatefulWidget {
 
 class _ProducerdashboardState extends State<Producerdashboard> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final BlockchainService blockChainService = BlockchainService();
 
   // Controllers for form fields
   final TextEditingController productNameController = TextEditingController();
@@ -46,7 +49,9 @@ class _ProducerdashboardState extends State<Producerdashboard> {
   @override
   void initState() {
     super.initState();
+    blockChainService.initialize();
   }
+
   void _onMapReady() {
     _isMapInitialized = true;
     if (_pendingLocation != null) {
@@ -72,7 +77,7 @@ class _ProducerdashboardState extends State<Producerdashboard> {
         allowedExtensions: ['pdf', 'doc', 'docx'],
         allowMultiple: false,
       );
-      
+
       if (result != null) {
         setState(() {
           selectedFile = File(result.files.single.path!);
@@ -112,23 +117,18 @@ class _ProducerdashboardState extends State<Producerdashboard> {
   }
 
   Future<void> _addProduct() async {
-    if (productNameController.text.isEmpty ||
-        productOriginController.text.isEmpty ||
+    String productName = productNameController.text;
+    String productOrigin = productOriginController.text;
+    String ipfsHash = selectedFilePath ?? '';
+
+    if (productName.isEmpty ||
+        productOrigin.isEmpty ||
         selectedProductType == null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: const Text('Please fill all required fields'),
-            actions: [
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          );
-        },
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all required fields'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -138,39 +138,24 @@ class _ProducerdashboardState extends State<Producerdashboard> {
     });
 
     try {
-      String? certificateUrl;
-      final productId = uuid.v4(); // Generate unique product ID
-      
-      // Upload file if selected
-      if (selectedFile != null) {
-        final fileExtension = selectedFile!.path.split('.').last;
-        final fileName = '$productId.$fileExtension';
-        
-        // Upload to Supabase Storage
-  await supabase.storage
-      .from('certificate')
-      .upload(
-        fileName,
-        selectedFile!,
-        fileOptions: FileOptions(
-          contentType: lookupMimeType(selectedFile!.path),
-        ),
-      );
+      // String? ipfsHash = await _uploadToIPFS(selectedFile!);
+      String txnHash = await blockChainService.createProduct(
+          productName, productOrigin, selectedProductType ?? '', ipfsHash);
 
-        // Get public URL
-        certificateUrl = supabase.storage
-            .from('certificate')
-            .getPublicUrl(fileName);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product created successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
 
+      final productId = uuid.v4(); // Generate unique product ID
       // Insert into product_data_table
       await supabase.from('product_data_table').insert({
         'product_id': productId,
-        'product_name': productNameController.text,
-        'product_type': selectedProductType,
-        'product_quantity': productQuantity.toString(),
-        'origin_location': productOriginController.text,
-        'image_url': certificateUrl,
+        'blockchain_hash': txnHash,
         'created_at': DateTime.now().toIso8601String(),
         // Add farmer_id if you have it
         // 'farmer_id': currentFarmerId,
@@ -184,7 +169,7 @@ class _ProducerdashboardState extends State<Producerdashboard> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Clear the form
         _clearForm();
       }
@@ -218,7 +203,8 @@ class _ProducerdashboardState extends State<Producerdashboard> {
   Future<LatLng?> getCityCoordinates(String cityName) async {
     try {
       final response = await http.get(
-        Uri.parse('https://nominatim.openstreetmap.org/search?format=json&q=$cityName'),
+        Uri.parse(
+            'https://nominatim.openstreetmap.org/search?format=json&q=$cityName'),
       );
 
       if (response.statusCode == 200) {
@@ -258,76 +244,58 @@ class _ProducerdashboardState extends State<Producerdashboard> {
 
   Future<void> _fetchProductLocation() async {
     if (productIdController.text.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: const Text('Please enter a Product ID first'),
-            actions: [
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          );
-        },
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Enter a Product ID first"),
+            backgroundColor: Colors.red),
       );
       return;
     }
 
     try {
+      // ✅ Lookup Transaction Hash in Supabase
       final response = await supabase
-          .from('product_data_table')
-          .select('origin_location')
+          .from('product_index')
+          .select('transaction_hash')
           .eq('product_id', productIdController.text)
           .single();
 
-      if (response.isEmpty) {
-        throw Exception('Product not found');
-      }
+      if (response.isEmpty) throw Exception("Product not found in index");
 
-      String locationData = response['origin_location'] as String;
-      
-      // First try to parse as LatLng
-      LatLng? coordinates = parseLatLng(locationData);
-      
-      // If not LatLng, try to get coordinates for city name
-      coordinates ??= await getCityCoordinates(locationData);
+      String txnHash = response['transaction_hash'];
+
+      // ✅ Fetch Product Details from Blockchain
+      List<dynamic> productData =
+          await blockChainService.getProductDetailsByTxnHash(txnHash);
+
+      String productName = productData[0];
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Product Name: $productName"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      String originLocation = productData[1];
+
+      // ✅ Fetch Coordinates for Origin Location
+      LatLng? coordinates = await getCityCoordinates(originLocation);
 
       if (coordinates != null) {
         setState(() {
-          locationString = locationData;
           productLocation = coordinates;
-          
-          // If map is ready, move to location immediately
-          if (_isMapInitialized) {
-            mapController.move(coordinates!, 13.0);
-          } else {
-            // Store location to move when map is ready
-            _pendingLocation = coordinates;
-          }
         });
       } else {
-        throw Exception('Could not determine location coordinates');
+        throw Exception("Could not determine location coordinates");
       }
-
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text('Failed to fetch location: ${e.toString()}'),
-              actions: [
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          );
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("Error fetching product data: $e"),
+              backgroundColor: Colors.red),
+        );
       }
     }
   }
@@ -360,7 +328,7 @@ class _ProducerdashboardState extends State<Producerdashboard> {
         options: MapOptions(
           initialCenter: productLocation!,
           initialZoom: 13.0,
-          onMapReady: _onMapReady,  // Add this callback
+          onMapReady: _onMapReady, // Add this callback
           interactionOptions: const InteractionOptions(
             flags: InteractiveFlag.all,
           ),
@@ -389,6 +357,7 @@ class _ProducerdashboardState extends State<Producerdashboard> {
       ),
     );
   }
+
   // Rest of your existing build method remains the same until the map section
   @override
   Widget build(BuildContext context) {
@@ -593,7 +562,8 @@ class _ProducerdashboardState extends State<Producerdashboard> {
                                         "Drop files or click to upload",
                                     style: const TextStyle(color: Colors.white),
                                   ),
-                                  const Icon(Icons.upload_file, color: Colors.cyan),
+                                  const Icon(Icons.upload_file,
+                                      color: Colors.cyan),
                                 ],
                               ),
                             ),
@@ -605,19 +575,19 @@ class _ProducerdashboardState extends State<Producerdashboard> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                               ElevatedButton(
-        onPressed: isLoading ? null : _addProduct,
-        child: isLoading 
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Text("Add"),
-      ),
+                              ElevatedButton(
+                                onPressed: isLoading ? null : _addProduct,
+                                child: isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text("Add"),
+                              ),
                               ElevatedButton(
                                   onPressed: isLoading ? null : _clearForm,
                                   child: const Text("Clear Form")),
@@ -630,7 +600,7 @@ class _ProducerdashboardState extends State<Producerdashboard> {
                     SizedBox(height: 20.h),
 
                     // **Product Location Section (Below Form)**
-Container(
+                    Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: Colors.grey[900],
@@ -669,16 +639,16 @@ Container(
                           ),
                           SizedBox(height: 20.h),
                           _buildMap(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-          ],),
-        
+            ),
+          ],
         ),
       ),
-    ],
-    ),
-    ),
     );
   }
 }
