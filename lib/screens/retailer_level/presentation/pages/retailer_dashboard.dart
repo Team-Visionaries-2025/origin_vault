@@ -1,10 +1,52 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:origin_vault/core/theme/app_pallete.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+// Define Product class at the top level
+class ProductModel {
+  final String id;
+  final String name;
+  final String type;
+  final String origin;
+  final String farmerId;
+  final String createdAt;
+  final String blockchainHash;
+  final String quantity;
+  final String? imageUrl;
+
+  ProductModel({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.origin,
+    required this.farmerId,
+    required this.createdAt,
+    required this.blockchainHash,
+    required this.quantity,
+    this.imageUrl,
+  });
+
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
+    return ProductModel(
+      id: json['product_id'] ?? '',
+      farmerId: json['farmer_id'] ?? '',
+      name: json['product_name'] ?? '',
+      type: json['product_type'] ?? '',
+      origin: json['origin_location'] ?? '',
+      createdAt: json['created_at'] ?? '',
+      blockchainHash: json['blockchain_hash'] ?? '',
+      quantity: json['product_quantity'] ?? '',
+      imageUrl: json['image_url'],
+    );
+  }
+}
 
 class RetailerDashboard extends StatefulWidget {
-  const RetailerDashboard({Key? key}) : super(key: key);
+  const RetailerDashboard({super.key});
 
   @override
   State<RetailerDashboard> createState() => _RetailerDashboardState();
@@ -12,12 +54,13 @@ class RetailerDashboard extends StatefulWidget {
 
 class _RetailerDashboardState extends State<RetailerDashboard> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  List<Map<String, String>> scannedProducts = [];
+  final supabase = Supabase.instance.client;
+  ProductModel? scannedProduct;
+  bool isLoading = false;
   String selectedWarehouse = 'Select Warehouse';
   String selectedProduct = 'Select Product';
   DateTime? expirationDate;
 
-  // Sample inventory data - Replace with your database fetch
   final List<Map<String, dynamic>> inventoryData = [
     {'name': 'Product 1', 'type': 'Fruit', 'stock': 120},
     {'name': 'Product 2', 'type': 'Wheat', 'stock': 264},
@@ -38,21 +81,75 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
     super.dispose();
   }
 
-  void _onDetect(BarcodeCapture barcodeCapture) {
-    if (barcodeCapture.barcodes.isEmpty) return;
+  Future<void> _fetchProductData(String productId) async {
+    if (!mounted) return;
 
-    final String? code = barcodeCapture.barcodes.first.rawValue;
+    setState(() {
+      isLoading = true;
+    });
 
-    if (code != null && !scannedProducts.any((p) => p['Product ID'] == code)) {
-      setState(() {
-        scannedProducts.add({
-          'Product ID': code,
-          'Product Name': 'Sample Product',
-          'Product Type': 'Pulses',
-          'Product Origin': 'Location Name',
-          'Product Certification': 'Cert No. 12345, Cert No. 67890'
+    try {
+      if (kDebugMode) {
+        print("Making Supabase request for product ID: $productId");
+      } // Debug print
+
+      final response = await supabase
+          .from('product_data_table')
+          .select()
+          .eq('product_id', productId)
+          .single();
+
+      if (kDebugMode) {
+        print("Supabase response: $response");
+      } // Debug print
+
+      if (mounted) {
+        setState(() {
+          scannedProduct = ProductModel.fromJson(response);
         });
-      });
+        if (kDebugMode) {
+          print("Product data: ${scannedProduct?.name}");
+        } // Debug print
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching data: $e");
+      } // Debug print
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching product data: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onDetect(BarcodeCapture barcodeCapture) {
+    if (kDebugMode) {
+      print("Barcode detected: ${barcodeCapture.barcodes}");
+    } // Debug print
+
+    if (barcodeCapture.barcodes.isNotEmpty) {
+      final String? code = barcodeCapture.barcodes.first.rawValue;
+      if (kDebugMode) {
+        print("Code value: $code");
+      } // Debug print
+
+      if (code != null && code.isNotEmpty) {
+        Navigator.pop(context);
+        if (kDebugMode) {
+          print("Fetching data for code: $code");
+        } // Debug print
+        _fetchProductData(code);
+      }
     }
   }
 
@@ -76,9 +173,16 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
                     SizedBox(height: 20.h),
                     _buildScannerButtons(),
                     SizedBox(height: 20.h),
-                    _buildInventoryManagement(),
+                    if (isLoading)
+                      const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.cyanAccent,
+                        ),
+                      )
+                    else if (scannedProduct != null)
+                      _buildProductDetailsTile(scannedProduct),
                     SizedBox(height: 20.h),
-                    _buildScannedProducts(),
+                    _buildInventoryManagement(),
                   ],
                 ),
               ),
@@ -111,18 +215,114 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
     );
   }
 
-  Widget _buildWelcomeSection() {
-    return Column(
+  // Previous widget building methods remain the same
+
+  Widget _buildProductDetailsTile(ProductModel? product) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 20.h),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: AppPallete.secondarybackgroundColor,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDetailRow('Product ID:', product?.id ?? 'No product scanned'),
+          SizedBox(height: 12.h),
+          _buildDetailRow(
+              'Product Name:', product?.name ?? 'No product scanned'),
+          SizedBox(height: 12.h),
+          _buildDetailRow(
+              'Product Type:', product?.type ?? 'No product scanned'),
+          SizedBox(height: 12.h),
+          _buildDetailRow(
+              'Product Origin:', product?.origin ?? 'No product scanned'),
+          SizedBox(height: 12.h),
+          _buildDetailRow(
+              'Farmer ID:', product?.farmerId ?? 'No product scanned'),
+          SizedBox(height: 12.h),
+          _buildDetailRow(
+              'Created At:', product?.createdAt ?? 'No product scanned'),
+          SizedBox(height: 12.h),
+          _buildDetailRow('Blockchain Hash:',
+              product?.blockchainHash ?? 'No product scanned'),
+          SizedBox(height: 12.h),
+          _buildDetailRow(
+              'Quantity:', product?.quantity ?? 'No product scanned'),
+          if (product?.imageUrl != null) ...[
+            SizedBox(height: 12.h),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.r),
+              child: Image.network(
+                product!.imageUrl!,
+                height: 200.h,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    height: 200.h,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[900],
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.cyanAccent,
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 200.h,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[900],
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 40,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Hello Retailer',
-            style: TextStyle(color: Colors.white, fontSize: 24.sp)),
-        Text('Welcome Back!',
+        SizedBox(
+          width: 150.w,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14.sp,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 32.sp,
-              fontWeight: FontWeight.bold,
-            )),
+              fontSize: 14.sp,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -168,6 +368,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
   void _scanBarcode() {
     showDialog(
       context: context,
+      barrierDismissible: true, // Allow closing by tapping outside
       builder: (context) => Dialog(
         child: SizedBox(
           height: 300.h,
@@ -175,16 +376,43 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
             controller: _controller,
             onDetect: _onDetect,
             errorBuilder: (context, error, child) {
+              if (kDebugMode) {
+                print("Scanner error: $error");
+              } // Debug print
               return Center(
-                child: Text(
-                  'Scanner Error: ${error.toString()}',
-                  style: TextStyle(color: Colors.red),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error, color: Colors.red, size: 50.sp),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'Scanner Error: ${error.toString()}',
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               );
             },
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildWelcomeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Hello Retailer',
+            style: TextStyle(color: Colors.white, fontSize: 24.sp)),
+        Text('Welcome Back!',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 32.sp,
+              fontWeight: FontWeight.bold,
+            )),
+      ],
     );
   }
 
@@ -252,7 +480,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
         style: TextStyle(color: Colors.white, fontSize: 16.sp),
         dropdownColor: Colors.black,
         isExpanded: true,
-        underline: SizedBox(),
+        underline: const SizedBox(),
       ),
     );
   }
@@ -315,7 +543,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
           context: context,
           initialDate: DateTime.now(),
           firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(Duration(days: 365 * 2)),
+          lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
@@ -374,49 +602,6 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildScannedProducts() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Scanned Products',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        ...scannedProducts
-            .map((product) => _buildProductTile(product))
-            .toList(),
-      ],
-    );
-  }
-
-  Widget _buildProductTile(Map<String, String> product) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: product.entries.map((entry) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: 4.h),
-            child: Text(
-              '${entry.key}: ${entry.value}',
-              style: TextStyle(color: Colors.white, fontSize: 16.sp),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

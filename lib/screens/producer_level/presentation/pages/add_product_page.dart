@@ -75,22 +75,22 @@ class _AddProductPageState extends State<AddProductPage> {
           'image_url': imageUrl,
         });
 
-        // Add to product to blockchain
-        final String transactionHash = await blockchainService.createProduct(
-          _productNameController.text,
-          _productOriginController.text,
-          '${_productTypeController.text}, Quantity: ${_productQuantityController.text}',
-          imageUrl ?? '',
-        );
+        // // Add to product to blockchain
+        // final BigInt transactionHash = await blockchainService.createProduct(
+        //   _productNameController.text,
+        //   _productOriginController.text,
+        //   '${_productTypeController.text}, Quantity: ${_productQuantityController.text}',
+        //   imageUrl ?? '',
+        // );
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'Product added successfully. Transaction Hash: $transactionHash')),
-          );
-          _resetForm();
-        }
+        // if (mounted) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //         content: Text(
+        //             'Product added successfully. Transaction Hash: $transactionHash')),
+        //   );
+        //   _resetForm();
+        // }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
