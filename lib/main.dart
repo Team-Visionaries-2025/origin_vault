@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'Origin Vault',
           theme: Apptheme.themeMode,
-          home: const UserPageWrapper(userLevel: 2), // Ensures Admin Navigation
+          home: const UserPageWrapper(userLevel: 4), // Ensures Admin Navigation
         );
       },
     );
