@@ -6,7 +6,7 @@ import 'package:origin_vault/screens/admin_level/notification_page.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/admin_sidebar.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();

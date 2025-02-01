@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
@@ -43,7 +44,7 @@ class BlockchainService {
       final createProductFunction = contract.function('createProduct');
 
       // Call the contract function
-      final result = await ethClient.sendTransaction(
+      final txnHash = await ethClient.sendTransaction(
         credentials,
         Transaction.callContract(
           contract: contract,
@@ -58,9 +59,33 @@ class BlockchainService {
         chainId: 1337,
       );
 
-      return result; // Transaction hash
+      await Future.delayed(
+          const Duration(seconds: 5)); // Wait for the transaction to be mined
+
+      return txnHash;
     } catch (e) {
       throw Exception("Error creating product: $e");
+    }
+  }
+
+  // Function to get the latest product ID
+  Future<BigInt> getLatestProductId() async {
+    try {
+      final getLatestProductIdFunction = contract.function('getProductCount');
+
+      final result = await ethClient.call(
+        contract: contract,
+        function: getLatestProductIdFunction,
+        params: [],
+      );
+
+      if (result.isEmpty) {
+        throw Exception("Product count is empty.");
+      }
+
+      return result.first as BigInt; // Returns the latest product ID
+    } catch (e) {
+      throw Exception("Error fetching latest product ID: $e");
     }
   }
 
@@ -133,7 +158,7 @@ class BlockchainService {
     return result;
   }
 
-  // Function to get the product details
+  // // Function to get the product details
   Future<List<dynamic>> getProductDetailsByTxnHash(String txnHash) async {
     final productDetailsFunction =
         contract.function('getProductDetailsByTxnHash');
@@ -145,6 +170,45 @@ class BlockchainService {
     );
 
     return result; // Returns list of product details
+  }
+
+  Future<List<dynamic>> getProductDetails(BigInt productId) async {
+    final productDetailsFunction = contract.function('productDetails');
+
+    final result = await ethClient.call(
+      contract: contract,
+      function: productDetailsFunction,
+      params: [productId],
+    );
+
+    return result; // Returns list of product details
+  }
+
+  Future<BigInt> getProductIdFromTransaction(TransactionReceipt receipt) async {
+    try {
+      // ✅ Get the event signature
+      final eventSignature = contract.event('ProductCreated').signature;
+
+      for (var log in receipt.logs) {
+        if (kDebugMode) {
+          print(" Log topics: ${log.topics}");
+          print(" Data: ${log.data}");
+        }
+        if (log.topics!.isNotEmpty && log.topics![0] == eventSignature) {
+          final productId = BigInt.parse(log.topics![1].toString());
+
+          if (kDebugMode) {
+            print("Extracted Product ID: $productId");
+          }
+
+          return productId;
+        }
+      }
+
+      throw Exception("Product ID not found in transaction logs.");
+    } catch (e) {
+      throw Exception("Error fetching Product ID from logs: $e");
+    }
   }
 
   // Function to get the average rating of a product

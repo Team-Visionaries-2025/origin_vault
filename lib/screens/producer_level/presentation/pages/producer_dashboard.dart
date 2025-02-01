@@ -11,7 +11,6 @@ import 'package:origin_vault/screens/admin_level/notification_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
-import 'package:mime/mime.dart';
 
 import '../../../../blockchain_service/blockchain_service.dart';
 
@@ -142,37 +141,32 @@ class _ProducerdashboardState extends State<Producerdashboard> {
       String txnHash = await blockChainService.createProduct(
           productName, productOrigin, selectedProductType ?? '', ipfsHash);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Product created successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      if (txnHash.isEmpty) {
+        throw Exception(
+            "Transaction hash is empty. Blockchain Transaction might have failed");
       }
 
-      final productId = uuid.v4(); // Generate unique product ID
-      // Insert into product_data_table
-      await supabase.from('product_data_table').insert({
-        'product_id': productId,
+      final productId = uuid.v4();
+      final response = await supabase.from('product_data_table').insert({
+        'product_id': productId.toString(),
         'blockchain_hash': txnHash,
         'created_at': DateTime.now().toIso8601String(),
-        // Add farmer_id if you have it
-        // 'farmer_id': currentFarmerId,
-      });
+      }).select();
+
+      if(response.isEmpty){
+        throw Exception("Failed to insert product data into Supabase");
+      }
 
       if (mounted) {
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Product added successfully'),
+            content: Text('Product created successfully: '),
             backgroundColor: Colors.green,
           ),
         );
-
-        // Clear the form
-        _clearForm();
       }
+
+      _clearForm();
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -262,11 +256,9 @@ class _ProducerdashboardState extends State<Producerdashboard> {
 
       if (response.isEmpty) throw Exception("Product not found in index");
 
-      String txnHash = response['transaction_hash'];
-
       // ✅ Fetch Product Details from Blockchain
-      List<dynamic> productData =
-          await blockChainService.getProductDetailsByTxnHash(txnHash);
+      List<dynamic> productData = await blockChainService
+          .getProductDetails(BigInt.parse(productIdController.text));
 
       String productName = productData[0];
       if (mounted) {

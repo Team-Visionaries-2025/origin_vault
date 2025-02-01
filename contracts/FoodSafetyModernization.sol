@@ -24,6 +24,7 @@ contract FoodSafetyModernization {
 
 
     mapping(uint256 => Product) public products;
+    uint256 public productCount;
     mapping(uint256 => string[]) public productReviews; //Store reviews linked to productId
 
     uint256 public productCount;
@@ -38,7 +39,7 @@ contract FoodSafetyModernization {
     address public owner; //Contract owner
 
     // Events for tracking various actions
-    event ProductCreated(uint256 productId, address farmer);
+    event ProductCreated(uint256  productId, address  farmer);
     event ProductProcessed(uint256 productId, address processor);
     event ProductInTransit(uint256 productId, address transporter);
     event ProductDelivered(uint256 productId, address retailer);
@@ -47,6 +48,7 @@ contract FoodSafetyModernization {
 
     constructor(){
         owner = msg.sender;
+        productCount = 0;
     }
 
     // modifiers to restrict access to verified users
@@ -161,6 +163,12 @@ contract FoodSafetyModernization {
         product.isCompleted = true;
 
         emit ProductDelivered(_productId, msg.sender);
+    }
+
+    // function to get  product count
+    function getProductCount() public view returns (uint256){
+        require(productCount > 0 , "No products have been added yet");
+        return productCount;
     }
 
     // Function for viewing product details

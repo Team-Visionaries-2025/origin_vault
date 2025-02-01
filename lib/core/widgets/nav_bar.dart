@@ -6,6 +6,8 @@ import 'package:origin_vault/core/theme/app_pallete.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/admin_dashboard.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/user_management_page.dart';
 import 'package:origin_vault/screens/producer_level/presentation/pages/producer_dashboard.dart';
+import 'package:origin_vault/screens/producer_level/presentation/pages/product_page.dart';
+import 'package:origin_vault/screens/retailer_level/presentation/pages/retailer_dashboard.dart';
 
 class UserPageWrapper extends StatefulWidget {
   final int userLevel;
@@ -57,12 +59,7 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
       case 2:
         return [
           // producer level pages
-          const Center(
-            child: Text(
-              "Add Product Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
+          const ProductPage(),
           const Center(
             child: Text(
               "Message Page",
@@ -87,12 +84,7 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
       case 3:
         return [
           // Retailer level pages
-          const Center(
-            child: Text(
-              "Summary Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
+          const RetailerDashboard(),
           const Center(
             child: Text(
               "Inventory Page",
@@ -182,7 +174,7 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
         return [
           // Producer Navbar
           CurvedNavigationBarItem(
-              icon: const Icon(Iconsax.box), label: 'Add Product'),
+              icon: const Icon(Iconsax.box), label: ' Product'),
           CurvedNavigationBarItem(
               icon: const Icon(Iconsax.message), label: 'Messages'),
           CurvedNavigationBarItem(
