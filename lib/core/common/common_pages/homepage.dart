@@ -18,7 +18,12 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 180.h),
+              SizedBox(height: 100.h),
+              Image.asset(
+                'assets/logo.png', // Ensure correct path
+                height: 100.h,
+              ),
+              SizedBox(height: 50.h),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),

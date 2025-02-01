@@ -5,7 +5,11 @@ import 'package:iconsax/iconsax.dart';
 import 'package:origin_vault/core/theme/app_pallete.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/admin_dashboard.dart';
 import 'package:origin_vault/screens/admin_level/presentation/pages/user_management_page.dart';
+import 'package:origin_vault/screens/consumer_level/presentation/pages/consumer_dashboard.dart';
+import 'package:origin_vault/screens/consumer_level/presentation/pages/feedback_page.dart';
+import 'package:origin_vault/screens/consumer_level/presentation/pages/scan_history_page.dart';
 import 'package:origin_vault/screens/producer_level/presentation/pages/producer_dashboard.dart';
+import 'package:origin_vault/screens/retailer_level/presentation/pages/retailer_dashboard.dart';
 
 class UserPageWrapper extends StatefulWidget {
   final int userLevel;
@@ -16,7 +20,7 @@ class UserPageWrapper extends StatefulWidget {
 }
 
 class _UserPageWrapperState extends State<UserPageWrapper> {
-  int _currentIndex = 0; //Tracks the selected tab index
+  int _currentIndex = 2; //Tracks the selected tab index
   late List<Widget> _pages; //Dynamically sets pages based on userLevel
 
   @override
@@ -99,12 +103,7 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
           ),
-          const Center(
-            child: Text(
-              "Scan Product Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
+          const RetailerDashboard(),
           const Center(
             child: Text(
               "Consumer Insights Page",
@@ -128,24 +127,9 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
           ),
-          const Center(
-            child: Text(
-              "Feedback Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
-          const Center(
-            child: Text(
-              "Home Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
-          const Center(
-            child: Text(
-              "Scan History Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
+          const FeedbackPage(),
+          const Consumerdashboard(),
+          const ScanHistoryPage(),
           const Center(
             child: Text(
               "Settings Page",
