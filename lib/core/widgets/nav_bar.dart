@@ -9,6 +9,7 @@ import 'package:origin_vault/screens/consumer_level/presentation/pages/consumer_
 import 'package:origin_vault/screens/consumer_level/presentation/pages/feedback_page.dart';
 import 'package:origin_vault/screens/consumer_level/presentation/pages/scan_history_page.dart';
 import 'package:origin_vault/screens/producer_level/presentation/pages/producer_dashboard.dart';
+import 'package:origin_vault/screens/producer_level/presentation/pages/qr_gen_page.dart';
 import 'package:origin_vault/screens/retailer_level/presentation/pages/retailer_dashboard.dart';
 
 class UserPageWrapper extends StatefulWidget {
@@ -74,12 +75,7 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
             ),
           ),
           const Producerdashboard(),
-          const Center(
-            child: Text(
-              "Supply chain Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
+          const QRCodeGenerationPage(),
           const Center(
             child: Text(
               "Settings Page",
