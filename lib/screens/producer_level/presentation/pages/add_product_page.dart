@@ -101,18 +101,6 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
-  void _resetForm() {
-    _formKey.currentState!.reset();
-    setState(() {
-      _productNameController.clear();
-      _productTypeController.clear();
-      _productQuantityController.clear();
-      _productOriginController.clear();
-      _pickedImage = null;
-      _productHexCode = _generate32HexCode();
-    });
-  }
-
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);

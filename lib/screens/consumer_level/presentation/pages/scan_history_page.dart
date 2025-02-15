@@ -72,7 +72,6 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error fetching scan history: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -188,7 +187,7 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
                     width: 80.w,
                     height: 80.w,
                     color: Colors.grey.shade800,
-                    child: Icon(Icons.image_not_supported, color: Colors.grey),
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
                   );
                 },
               ),

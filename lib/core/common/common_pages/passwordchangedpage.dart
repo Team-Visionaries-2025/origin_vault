@@ -19,7 +19,7 @@ class PasswordChangedPage extends StatelessWidget {
               Container(
                 width: 100.w,
                 height: 100.w,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.green,
                   shape: BoxShape.circle,
                 ),
@@ -52,7 +52,7 @@ class PasswordChangedPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Loginpage()),
+                    MaterialPageRoute(builder: (context) => const Loginpage()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -62,7 +62,7 @@ class PasswordChangedPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Back to Login',
                   style: TextStyle(color: Colors.black),
                 ),

@@ -21,7 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.cyan),
+            icon: const Icon(Icons.arrow_back, color: Colors.cyan),
             onPressed: () => Navigator.pop(context),
           ),
           SizedBox(width: 20.w),
@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildListItem(IconData icon, String title, {Widget? trailing}) {
     return ListTile(
       leading: Icon(icon, color: Colors.cyan),
-      title: Text(title, style: TextStyle(color: Colors.white)),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: trailing,
       onTap: () {
         // Handle item tap
@@ -61,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildRadioListTile(String title, String value) {
     return RadioListTile<String>(
-      title: Text(title, style: TextStyle(color: Colors.white)),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
       value: value,
       groupValue: selectedNotification,
       onChanged: (String? newValue) {
@@ -78,18 +78,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: AppPallete.backgroundColor,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
+      floatingActionButton: SizedBox(
         height: 80.h,
         width: 80.w,
         child: FloatingActionButton(
           onPressed: () {},
           backgroundColor: AppPallete.secondarybackgroundColor,
           elevation: 0,
-          shape: CircleBorder(),
+          shape: const CircleBorder(),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Iconsax.setting_2, size: 24, color: Colors.cyan),
+              const Icon(Iconsax.setting_2, size: 24, color: Colors.cyan),
               SizedBox(height: 5.h),
               Text('Settings',
                   style: TextStyle(color: Colors.cyan, fontSize: 12.sp)),
@@ -99,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       bottomNavigationBar: BottomAppBar(
         notchMargin: 8.0,
-        shape: CircularNotchedRectangle(),
+        shape: const CircularNotchedRectangle(),
         color: AppPallete.secondarybackgroundColor,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Icon(icon, color: AppPallete.iconColor),
           SizedBox(height: 3.h),
-          Text(label, style: TextStyle(color: AppPallete.iconColor)),
+          Text(label, style: const TextStyle(color: AppPallete.iconColor)),
         ],
       ),
     );

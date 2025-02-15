@@ -34,15 +34,15 @@ class _ProductPageState extends State<ProductPage> {
       try {
         String txnHash = product['txn_hash'];
         if (txnHash.isEmpty) continue;
-        List<dynamic> productData =
+        Map<String, dynamic> productData =
             await blockchainService.getProductDetailsByTxnHash(txnHash);
 
         if (productData.isEmpty) continue;
 
         fullProductList.add({
           'blochchain_hash': txnHash,
-          'name': productData[1],
-          'origin': productData[2],
+          'name': productData['name'] ?? 'Unknown',
+          'origin': productData['origin'] ?? 'Unknown',
           'created_at': product['created_at'],
         });
       } catch (e) {

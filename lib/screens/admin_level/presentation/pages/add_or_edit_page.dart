@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:origin_vault/core/theme/app_pallete.dart';
 
 class AddEditUserScreen extends StatefulWidget {
   const AddEditUserScreen({super.key});

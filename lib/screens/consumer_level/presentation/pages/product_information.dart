@@ -12,7 +12,7 @@ class ProductDetailsPage extends StatelessWidget {
   final double rating;
 
   const ProductDetailsPage({
-    Key? key,
+    super.key,
     required this.productName,
     required this.date,
     required this.time,
@@ -20,9 +20,10 @@ class ProductDetailsPage extends StatelessWidget {
     required this.description,
     required this.imageUrl,
     required this.rating,
-  }) : super(key: key);
+  });
 
-  Widget _buildHeader(BuildContext context) {  // Added BuildContext parameter
+  Widget _buildHeader(BuildContext context) {
+    // Added BuildContext parameter
     return Row(
       children: [
         IconButton(
@@ -41,7 +42,8 @@ class ProductDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProductBasicInfo(BuildContext context) {  // Added BuildContext for future use
+  Widget _buildProductBasicInfo(BuildContext context) {
+    // Added BuildContext for future use
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),
@@ -67,7 +69,8 @@ class ProductDetailsPage extends StatelessWidget {
                       width: 100.w,
                       height: 100.w,
                       color: Colors.grey[800],
-                      child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
+                      child: Icon(Icons.image_not_supported,
+                          color: Colors.grey[600]),
                     );
                   },
                 ),
@@ -111,7 +114,8 @@ class ProductDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProcessingInfo(BuildContext context) {  // Added BuildContext for future use
+  Widget _buildProcessingInfo(BuildContext context) {
+    // Added BuildContext for future use
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(16.w),
@@ -169,7 +173,8 @@ class ProductDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildReviews(BuildContext context) {  // Added BuildContext for future use
+  Widget _buildReviews(BuildContext context) {
+    // Added BuildContext for future use
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),

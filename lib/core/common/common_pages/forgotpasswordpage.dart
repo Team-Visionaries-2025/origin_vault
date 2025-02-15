@@ -20,7 +20,7 @@ class ForgotPasswordPage extends StatelessWidget {
             children: [
               SizedBox(height: 20.h),
               IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
               SizedBox(height: 40.h),
@@ -41,7 +41,7 @@ class ForgotPasswordPage extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Enter your email',
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: const TextStyle(color: Colors.grey),
                   fillColor: Colors.grey[900],
                   filled: true,
                   border: OutlineInputBorder(
@@ -56,7 +56,7 @@ class ForgotPasswordPage extends StatelessWidget {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => OTPVerificationPage()));
+                          builder: (context) => const OTPVerificationPage()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -65,21 +65,21 @@ class ForgotPasswordPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Send Code',
                   style: TextStyle(color: Colors.black),
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Center(
                 child: RichText(
                   text: TextSpan(
                     text: "Remember Password? ",
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                     children: [
                       TextSpan(
                         text: 'Login',
-                        style: TextStyle(color: Colors.blue),
+                        style: const TextStyle(color: Colors.blue),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             Navigator.push(

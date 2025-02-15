@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,7 +46,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
             children: [
               SizedBox(height: 20.h),
               IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
               SizedBox(height: 40.h),
@@ -82,7 +83,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                       keyboardType: TextInputType.number,
                       maxLength: 1,
                       style: TextStyle(color: Colors.white, fontSize: 24.sp),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: InputBorder.none,
                         counterText: "",
                       ),
@@ -100,11 +101,13 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => PasswordChangedPage()),
+                        builder: (context) => const PasswordChangedPage()),
                   );
                   String otp =
                       _controllers.map((controller) => controller.text).join();
-                  print('Verifying OTP: $otp');
+                  if (kDebugMode) {
+                    print('Verifying OTP: $otp');
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -113,15 +116,15 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Verify',
                   style: TextStyle(color: Colors.black),
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Center(
                 child: RichText(
-                  text: TextSpan(
+                  text: const TextSpan(
                     text: "Didn't received code? ",
                     style: TextStyle(color: Colors.grey),
                     children: [

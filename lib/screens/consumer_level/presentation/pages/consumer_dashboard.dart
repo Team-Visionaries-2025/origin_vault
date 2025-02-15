@@ -60,15 +60,11 @@ class _ConsumerdashboardState extends State<Consumerdashboard> {
   }
 
   void _onDetect(BarcodeCapture barcodeCapture) {
-    print("Barcode detected: ${barcodeCapture.barcodes}");
-
     if (barcodeCapture.barcodes.isNotEmpty) {
       final String? code = barcodeCapture.barcodes.first.rawValue;
-      print("Code value: $code");
 
       if (code != null && code.isNotEmpty) {
         Navigator.pop(context);
-        print("Fetching data for code: $code");
         _onProductScanned(code);
       }
     }
@@ -77,24 +73,18 @@ class _ConsumerdashboardState extends State<Consumerdashboard> {
   Future<void> _onProductScanned(String code) async {
     setState(() => _isLoading = true);
     try {
-      print("Making Supabase request for product ID: $code");
-
       final response = await supabase
           .from('product_data_table')
           .select('product_id, product_name, product_type, origin_location')
           .eq('product_id', code)
           .single();
 
-      print("Supabase response: $response");
-
-      if (mounted && response != null) {
+      if (mounted) {
         setState(() {
           _scannedProduct = Product.fromJson(response);
         });
-        print("Product data: ${_scannedProduct?.name}");
       }
     } catch (e) {
-      print("Error fetching data: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -131,7 +121,6 @@ class _ConsumerdashboardState extends State<Consumerdashboard> {
                   controller: _controller,
                   onDetect: _onDetect,
                   errorBuilder: (context, error, child) {
-                    print("Scanner error: $error");
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

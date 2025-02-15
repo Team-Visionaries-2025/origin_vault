@@ -38,7 +38,6 @@ class _UsermanagementState extends State<Usermanagement> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error fetching users: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -58,6 +57,7 @@ class _UsermanagementState extends State<Usermanagement> {
     });
   }
 
+  @override
   void dispose() {
     super.dispose();
     _filteredUsers.clear();
@@ -93,11 +93,11 @@ class _UsermanagementState extends State<Usermanagement> {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: TextField(
         controller: _searchController,
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: 'User Name',
-          hintStyle: TextStyle(color: Colors.grey),
-          prefixIcon: Icon(Iconsax.search_normal, color: Colors.cyan),
+          hintStyle: const TextStyle(color: Colors.grey),
+          prefixIcon: const Icon(Iconsax.search_normal, color: Colors.cyan),
           filled: true,
           fillColor: AppPallete.secondarybackgroundColor,
           border: OutlineInputBorder(
@@ -113,7 +113,7 @@ class _UsermanagementState extends State<Usermanagement> {
   Widget _buildUserList() {
     return ListView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: _filteredUsers.length + 1,
       itemBuilder: (context, index) {
         if (index == _filteredUsers.length) {
@@ -139,18 +139,18 @@ class _UsermanagementState extends State<Usermanagement> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('User ID: ${user['user_id'] ?? 'N/A'}',
-                    style: TextStyle(color: Colors.white)),
+                    style: const TextStyle(color: Colors.white)),
                 Text('User Name: ${user['name'] ?? 'N/A'}',
-                    style: TextStyle(color: Colors.white)),
+                    style: const TextStyle(color: Colors.white)),
                 Text('User Role: ${user['role'] ?? 'N/A'}',
-                    style: TextStyle(color: Colors.white)),
+                    style: const TextStyle(color: Colors.white)),
                 Text('Status: ${user['status'] ?? 'N/A'}',
-                    style: TextStyle(color: Colors.white)),
+                    style: const TextStyle(color: Colors.white)),
               ],
             ),
           ),
           IconButton(
-            icon: Icon(Iconsax.edit, color: Colors.cyan),
+            icon: const Icon(Iconsax.edit, color: Colors.cyan),
             onPressed: () {
               // Handle edit action
             },
@@ -180,7 +180,7 @@ class _UsermanagementState extends State<Usermanagement> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Iconsax.add_circle, color: Colors.white),
+              const Icon(Iconsax.add_circle, color: Colors.white),
               SizedBox(width: 8.w),
               Text('Add/Edit Users',
                   style: TextStyle(color: Colors.white, fontSize: 16.sp)),
@@ -191,32 +191,12 @@ class _UsermanagementState extends State<Usermanagement> {
     );
   }
 
-  Widget _buildBottomNavItem(IconData icon, String label, EdgeInsets padding) {
-    return Padding(
-      padding: padding,
-      child: InkWell(
-        onTap: () {
-          print("$label button tapped");
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: AppPallete.iconColor, size: 24.sp),
-            SizedBox(height: 3.h),
-            Text(label,
-                style: TextStyle(color: AppPallete.iconColor, fontSize: 12.sp)),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppPallete.backgroundColor,
-      drawer: SideMenu(),
+      drawer: const SideMenu(),
       body: Column(
         children: [
           _buildTopBar(),
@@ -238,7 +218,7 @@ class _UsermanagementState extends State<Usermanagement> {
                   ),
                   _buildSearchBar(),
                   _isLoading
-                      ? Center(child: CircularProgressIndicator())
+                      ? const Center(child: CircularProgressIndicator())
                       : _buildUserList(),
                 ],
               ),

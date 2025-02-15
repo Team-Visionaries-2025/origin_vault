@@ -189,11 +189,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
           return;
         }
 
-        // TODO: Implement submission logic
-        print('Product: $selectedProduct');
-        print('Rating: $rating');
-        print('Review: ${_reviewController.text}');
-
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

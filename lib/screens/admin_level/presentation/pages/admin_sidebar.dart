@@ -16,47 +16,47 @@ class SideMenu extends StatelessWidget {
       color: Colors.black,
       child: Column(
         children: [
-          SizedBox(height: 50),
-          Text(
+          const SizedBox(height: 50),
+          const Text(
             'Origin Vault',
             style: TextStyle(color: Colors.white, fontSize: 24),
           ),
-          SizedBox(height: 20),
-          CircleAvatar(
+          const SizedBox(height: 20),
+          const CircleAvatar(
             radius: 40,
             backgroundColor: Colors.orange,
             child: Icon(Icons.person, size: 40, color: Colors.white),
           ),
-          SizedBox(height: 10),
-          Text('ADMIN', style: TextStyle(color: Colors.white)),
-          SizedBox(height: 30),
+          const SizedBox(height: 10),
+          const Text('ADMIN', style: TextStyle(color: Colors.white)),
+          const SizedBox(height: 30),
           ListTile(
-            leading: Icon(Iconsax.element_equal),
-            title: Text('Dashboard', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Iconsax.element_equal),
+            title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => DashboardScreen()),
+                MaterialPageRoute(builder: (context) => const DashboardScreen()),
               );
             },
           ),
           ListTile(
-            leading: Icon(Iconsax.setting_2),
-            title: Text('Settings', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Iconsax.setting_2),
+            title: const Text('Settings', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsScreen()),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),
           ListTile(
-            leading: Icon(Iconsax.logout),
-            title: Text('Logout', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Iconsax.logout),
+            title: const Text('Logout', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Loginpage()),
+                MaterialPageRoute(builder: (context) => const Loginpage()),
               );
             },
           ),

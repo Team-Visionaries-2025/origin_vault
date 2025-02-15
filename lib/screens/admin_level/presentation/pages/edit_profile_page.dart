@@ -28,7 +28,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.cyan),
+            icon: const Icon(Icons.arrow_back, color: Colors.cyan),
             onPressed: () => Navigator.pop(context),
           ),
           SizedBox(width: 20.w),
@@ -85,7 +85,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     isExpanded: true,
                     value: label == 'Date of Birth' ? _dateOfBirth : _country,
                     dropdownColor: AppPallete.secondarybackgroundColor,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                     onChanged: (String? newValue) {
                       setState(() {
                         if (label == 'Date of Birth') {
@@ -107,11 +107,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               : TextField(
                   controller: controller,
                   obscureText: isPassword,
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     suffixIcon: isPassword
-                        ? Icon(Icons.visibility_off, color: Colors.grey)
+                        ? const Icon(Icons.visibility_off, color: Colors.grey)
                         : null,
                   ),
                 ),
@@ -126,18 +126,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: AppPallete.backgroundColor,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
+      floatingActionButton: SizedBox(
         height: 80.h,
         width: 80.w,
         child: FloatingActionButton(
           onPressed: () {},
           backgroundColor: AppPallete.secondarybackgroundColor,
           elevation: 0,
-          shape: CircleBorder(),
+          shape: const CircleBorder(),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Iconsax.setting_2, size: 24, color: Colors.cyan),
+              const Icon(Iconsax.setting_2, size: 24, color: Colors.cyan),
               SizedBox(height: 5.h),
               Text('Settings',
                   style: TextStyle(color: Colors.cyan, fontSize: 12.sp)),
@@ -147,7 +147,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       bottomNavigationBar: BottomAppBar(
         notchMargin: 8.0,
-        shape: CircularNotchedRectangle(),
+        shape: const CircularNotchedRectangle(),
         color: AppPallete.secondarybackgroundColor,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -190,13 +190,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       onPressed: () {
                         // Handle save changes
                       },
-                      child: Text('Save changes'),
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(double.infinity, 50.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                       ),
+                      child: const Text('Save changes'),
                     ),
                   ],
                 ),
@@ -216,7 +216,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         children: [
           Icon(icon, color: AppPallete.iconColor),
           SizedBox(height: 3.h),
-          Text(label, style: TextStyle(color: AppPallete.iconColor)),
+          Text(label, style: const TextStyle(color: AppPallete.iconColor)),
         ],
       ),
     );

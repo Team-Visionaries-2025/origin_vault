@@ -158,18 +158,29 @@ class BlockchainService {
     return result;
   }
 
-  // // Function to get the product details
-  Future<List<dynamic>> getProductDetailsByTxnHash(String txnHash) async {
-    final productDetailsFunction =
-        contract.function('getProductDetailsByTxnHash');
+  // Function to get the product details
+  Future<Map<String, dynamic>> getProductDetailsByTxnHash(
+      String txnHash) async {
+    try {
+      final productDetailsFunction =
+          contract.function('getProductDetailsByTxnHash');
 
-    final result = await ethClient.call(
-      contract: contract,
-      function: productDetailsFunction,
-      params: [txnHash],
-    );
+      List<dynamic> result = await ethClient.call(
+        contract: contract,
+        function: productDetailsFunction,
+        params: [txnHash],
+      );
 
-    return result; // Returns list of product details
+      return {
+        'name': result[1],
+        'origin': result[2],
+        'processingDetails': result[3],
+        'ipfsHash': result[4],
+        'createdAt': result[9],
+      }; // Returns list of product details
+    } catch (e) {
+      throw Exception("Error fetching product details: $e");
+    }
   }
 
   Future<List<dynamic>> getProductDetails(BigInt productId) async {
@@ -194,7 +205,8 @@ class BlockchainService {
           print(" Log topics: ${log.topics}");
           print(" Data: ${log.data}");
         }
-        if (log.topics!.isNotEmpty && log.topics![0] == eventSignature) {
+        if (log.topics!.isNotEmpty &&
+            log.topics![0] == eventSignature.toString()) {
           final productId = BigInt.parse(log.topics![1].toString());
 
           if (kDebugMode) {

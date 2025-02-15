@@ -149,11 +149,11 @@ class _ProducerdashboardState extends State<Producerdashboard> {
       final productId = uuid.v4();
       final response = await supabase.from('product_data_table').insert({
         'product_id': productId.toString(),
-        'blockchain_hash': txnHash,
+        'blockchain_hash': txnHash.toString(),
         'created_at': DateTime.now().toIso8601String(),
       }).select();
 
-      if(response.isEmpty){
+      if (response.isEmpty) {
         throw Exception("Failed to insert product data into Supabase");
       }
 

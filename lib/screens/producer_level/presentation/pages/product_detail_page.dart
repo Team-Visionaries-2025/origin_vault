@@ -25,7 +25,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     try {
       final txnHash = widget.product["blockchain_hash"];
       List<dynamic> productData =
-          await blockchainService.getProductDetailsByTxnHash(txnHash);
+          (await blockchainService.getProductDetailsByTxnHash(txnHash)) as List;
 
       if (mounted) {
         setState(() {
