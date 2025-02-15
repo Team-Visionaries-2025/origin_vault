@@ -70,12 +70,7 @@ class _UserPageWrapperState extends State<UserPageWrapper> {
             ),
           ),
           const Producerdashboard(),
-          const Center(
-            child: Text(
-              "Supply chain Page",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
+          const QRCodeGenerationPage(),
           const Center(
             child: Text(
               "Settings Page",

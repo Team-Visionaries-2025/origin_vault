@@ -2,25 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:origin_vault/core/theme/app_pallete.dart';
-import 'package:origin_vault/screens/consumer_level/presentation/pages/product_information.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:origin_vault/screens/consumer_level/presentation/pages/product_information.dart';
 
 class ScannedProduct {
-  final String id;
-  final String name;
-  final String origin;
-  final String processingMethod;
+  final String historyId;
+  final String userId;
+  final String productId;
+  final String productName;
+  final DateTime? purchaseDate;
+  final double amount;
+  final String purchaseLocation;
+  final String originLocation;
+  final String productType;
+  final int productQuantity;
   final String imageUrl;
-  final DateTime scanDate;
 
   ScannedProduct({
-    required this.id,
-    required this.name,
-    required this.origin,
-    required this.processingMethod,
+    required this.historyId,
+    required this.userId,
+    required this.productId,
+    required this.productName,
+    required this.purchaseDate,
+    required this.amount,
+    required this.purchaseLocation,
+    required this.originLocation,
+    required this.productType,
+    required this.productQuantity,
     required this.imageUrl,
-    required this.scanDate,
   });
 }
 
@@ -34,7 +44,6 @@ class ScanHistoryPage extends StatefulWidget {
 class _ScanHistoryPageState extends State<ScanHistoryPage> {
   final TextEditingController _searchController = TextEditingController();
   List<ScannedProduct> _products = [];
-  List<ScannedProduct> _filteredProducts = [];
   bool _isLoading = true;
   final supabase = Supabase.instance.client;
 
@@ -45,104 +54,64 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
   }
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppPallete.backgroundColor,
+      appBar: AppBar(
+        title: const Text('Scan History'),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: _products.length,
+              itemBuilder: (context, index) {
+                return _buildProductTile(_products[index]);
+              },
+            ),
+    );
   }
 
   Future<void> _fetchScanHistory() async {
     try {
       final response = await supabase
-          .from('scan_history')
-          .select('*, products(*)')
-          .order('scan_date', ascending: false);
+          .from('consumer_product_history_table')
+          .select('*')
+          .order('purchase_date', ascending: false);
 
       setState(() {
-        _products = response
-            .map((data) => ScannedProduct(
-                  id: data['products']['id'],
-                  name: data['products']['name'],
-                  origin: data['products']['origin'],
-                  processingMethod: data['products']['processing_method'],
-                  imageUrl: data['products']['image_url'],
-                  scanDate: DateTime.parse(data['scan_date']),
-                ))
-            .toList();
-        _filteredProducts = List.from(_products);
+        _products = response.map((data) {
+          DateTime? purchaseDate;
+          try {
+            purchaseDate = data['purchase_date'] != null &&
+                    data['purchase_date'].toString().isNotEmpty
+                ? DateTime.parse(data['purchase_date'])
+                : null;
+          } catch (e) {
+            print('Invalid date format: ${data['purchase_date']}');
+            purchaseDate = null;
+          }
+
+          return ScannedProduct(
+            historyId: data['history_id'] ?? '',
+            userId: data['user_id'] ?? '',
+            productId: data['product_id'] ?? '',
+            productName: data['product_name'] ?? 'Unknown Product',
+            purchaseDate: purchaseDate,
+            amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+            purchaseLocation: data['purchase_location'] ?? 'Unknown',
+            originLocation: data['origin_location'] ?? 'Unknown',
+            productType: data['product_type'] ?? 'Unknown',
+            productQuantity:
+                int.tryParse(data['product_quantity']?.toString() ?? '0') ?? 0,
+            imageUrl: data['image_url'] ?? '',
+          );
+        }).toList();
         _isLoading = false;
       });
     } catch (e) {
+      print('Error fetching consumer product history: $e');
       setState(() => _isLoading = false);
     }
-  }
-
-  void _filterProducts(String query) {
-    setState(() {
-      _filteredProducts = _products.where((product) {
-        return product.name.toLowerCase().contains(query.toLowerCase()) ||
-            product.id.toLowerCase().contains(query.toLowerCase());
-      }).toList();
-    });
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      height: 48.h,
-      decoration: BoxDecoration(
-        color: AppPallete.secondarybackgroundColor,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.cyan
-              .withOpacity(0.2), // Reduced opacity for subtler border
-        ),
-      ),
-      child: Row(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(left: 16.w),
-            child: Icon(
-              Iconsax.search_normal,
-              color: Colors.cyan.withOpacity(0.7), // Slightly dimmed icon
-              size: 20.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              style: TextStyle(
-                color: Colors.grey[900], // Lighter grey for better visibility
-                fontSize: 15.sp,
-                height: 1.0,
-              ),
-              cursorColor: Colors.cyan.withOpacity(0.7), // Custom cursor color
-              decoration: InputDecoration(
-                isDense: true,
-                border: InputBorder.none,
-                hintText: 'Search product code or name...',
-                hintStyle: TextStyle(
-                  color: Colors.grey[200], // Darker grey for hint text
-                  fontSize: 15.sp,
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 14.h),
-                focusedBorder: InputBorder.none, // Remove focus border
-                enabledBorder: InputBorder.none, // Remove enabled border
-              ),
-              onChanged: _filterProducts,
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.only(right: 8.w),
-            child: Icon(
-              Icons.arrow_drop_down,
-              color: Colors.cyan.withOpacity(0.7), // Matching icon color
-              size: 22.sp,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildProductTile(ScannedProduct product) {
@@ -152,15 +121,17 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
           context,
           MaterialPageRoute(
             builder: (context) => ProductDetailsPage(
-              productName: product.name,
-              date: DateFormat('dd/MM/yyyy').format(product.scanDate),
-              time: DateFormat('h:mm a').format(product.scanDate),
-              origin: product.origin,
-              description:
-                  'Lorem Ipsum is simply dummy text...', // You might want to add description field to your ScannedProduct model
+              productName: product.productName,
+              date: product.purchaseDate != null
+                  ? DateFormat('dd/MM/yyyy').format(product.purchaseDate!)
+                  : 'Unknown',
+              time: product.purchaseDate != null
+                  ? DateFormat('h:mm a').format(product.purchaseDate!)
+                  : 'Unknown',
+              origin: product.originLocation,
+              description: 'Purchased at ${product.purchaseLocation}',
               imageUrl: product.imageUrl,
-              rating:
-                  4.0, // You might want to add rating field to your ScannedProduct model
+              rating: 4.0,
             ),
           ),
         );
@@ -174,7 +145,6 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
         ),
         child: Row(
           children: [
-            // Rest of your existing tile UI code remains the same
             ClipRRect(
               borderRadius: BorderRadius.circular(8.r),
               child: Image.network(
@@ -187,7 +157,8 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
                     width: 80.w,
                     height: 80.w,
                     color: Colors.grey.shade800,
-                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                    child: const Icon(Icons.image_not_supported,
+                        color: Colors.grey),
                   );
                 },
               ),
@@ -197,87 +168,26 @@ class _ScanHistoryPageState extends State<ScanHistoryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    product.name,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Origin: ${product.origin}',
-                    style: TextStyle(color: Colors.grey, fontSize: 14.sp),
-                  ),
-                  Text(
-                    'Processing Method: ${product.processingMethod}',
-                    style: TextStyle(color: Colors.grey, fontSize: 14.sp),
-                  ),
+                  Text(product.productName,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold)),
+                  Text('Origin: ${product.originLocation}',
+                      style: TextStyle(color: Colors.grey, fontSize: 14.sp)),
+                  Text('Product Type: ${product.productType}',
+                      style: TextStyle(color: Colors.grey, fontSize: 14.sp)),
+                  Text('Quantity: ${product.productQuantity}',
+                      style: TextStyle(color: Colors.grey, fontSize: 14.sp)),
+                  Text('Purchased at: ${product.purchaseLocation}',
+                      style: TextStyle(color: Colors.grey, fontSize: 14.sp)),
+                  Text('Amount: ₹${product.amount.toStringAsFixed(2)}',
+                      style: TextStyle(color: Colors.cyan, fontSize: 14.sp)),
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  DateFormat('dd/MM/yyyy').format(product.scanDate),
-                  style: TextStyle(color: Colors.grey, fontSize: 12.sp),
-                ),
-                Text(
-                  DateFormat('h:mm a').format(product.scanDate),
-                  style: TextStyle(color: Colors.grey, fontSize: 12.sp),
-                ),
-              ],
-            ),
           ],
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppPallete.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppPallete.backgroundColor,
-        elevation: 0,
-        title: Text(
-          'Searched Product History',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left, color: Colors.cyan),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.cyan))
-                : _filteredProducts.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No products found',
-                          style: TextStyle(color: Colors.grey, fontSize: 16.sp),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: _filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          return _buildProductTile(_filteredProducts[index]);
-                        },
-                      ),
-          ),
-        ],
       ),
     );
   }
